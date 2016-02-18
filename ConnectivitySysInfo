@@ -1,0 +1,113 @@
+package systeminfo;
+import java.lang.management.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.io.*;
+
+class HardwareInfo implements Runnable
+{
+	public HardwareInfo() {
+		//System.err.println("SYSTEMINFO PROGRAM INVOKED");
+	}
+	
+	static final Double diskSize = (double) new File("/").getTotalSpace();
+	static final String userName = System.getProperty("user.name");
+	static Double memorySize = 0.0;
+	static final Double maxMemory = (double) Runtime.getRuntime().maxMemory();
+	static final  String ip_address="127.0.0.1";
+	
+	
+	//get hostname
+	public String hostname()
+	{
+		  InetAddress ip;
+	        String hostname = null;
+	        try {
+	            ip = InetAddress.getLocalHost();
+	            hostname = ip.getHostName();
+	            System.out.println("Your current IP address : " + ip);
+	            System.out.println("Your current Hostname : " + hostname);
+	 
+	        } catch (UnknownHostException e) {
+	 
+	            e.printStackTrace();
+	        }
+	        return hostname;
+	}
+	
+	//Check the system connectivity for multiple platform
+	private static void ping(String host) throws IOException, InterruptedException {
+	    boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+	    ProcessBuilder processBuilder = new ProcessBuilder("ping", isWindows? "-n" : "-c", "1", host);
+	    Process proc = processBuilder.start();
+	    int returnVal = proc.waitFor();
+	    //return returnVal == 0;
+	    //System.err.println("CHECK SYSTEM CONNECTIVITY");
+	       if (returnVal==0)
+	       {
+	    	   System.err.println("SYSTEM IS CONNECTED");
+		    } else{
+			   System.err.println("SYSTEM IS DISCONNECTED");
+	       }
+	     }
+	
+	public static void hinfo()
+	{
+		try
+        {
+        memorySize = (double) ((com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getTotalPhysicalMemorySize();
+        }catch(Exception e)
+        {
+        	e.printStackTrace();
+        }
+        //below details contains in Giga Bytes (GB)
+        //1. Hard Drive size means how much "/" drive has
+        //2. RAM size (GB)
+        /*3. Maximum amount of memory that the Java virtual machine will attempt to use.
+        If there is no inherent limit then the value Long.MAX_VALUE will be returned.*/
+
+        //System.err.println("HARDWARE DETAILS");
+        System.out.println("Size of C:="+(diskSize/(1024*1024*1024))+" GB");
+        System.out.println("System User Name= "+userName);
+        System.out.println("RAM Size="+(memorySize/(1024*1024*1024))+" GB");
+        System.out.println("Max available memory = "+(maxMemory/(1024*1024*1024))+" GB");
+	}
+	
+    public static void main(String... a) throws ClassCastException, IOException, InterruptedException
+    {
+    	HardwareInfo hInfo = new HardwareInfo();
+    	Thread thread = new Thread(hInfo);
+    	thread.start();
+    	
+}
+	@Override
+	public void run() {
+		while(true){
+			//Get hardware info from hinfo()
+			hinfo();
+	        //If the rprogram is able to ping the system then it will print "SYSTEM IS CONNECTED" else
+	        // "SYSTEM IS DISCONNECTED"
+	    	try {
+				ping(hostname());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    	try {
+				for(int i=0;i<60;i++)
+				{
+					Thread.sleep(1000);
+					System.err.print("-");
+				}
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+	    	System.out.println();
+	    	}
+		
+	}
+}
