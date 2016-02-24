@@ -1,2 +1,2 @@
 # junkycoder
-public repo for learning LDD 
+public repo for learning
